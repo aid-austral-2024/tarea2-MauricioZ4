@@ -1,29 +1,45 @@
 ---
-title: "tarea 2"
-format: html
-editor: visual
+title: "Optimización de Rutas de Distribución"
+author: "Mauricio Zamora"
+date: "`r Sys.Date()`"
 format: 
   html:
     embed-resources: true
+editor: visual
 ---
 
-## Quarto
+# Introducción
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+Explica brevemente el contexto del trabajo: - El problema en estudio: ¿Por qué es importante analizar y optimizar las rutas de distribución? - Objetivo del trabajo: Por ejemplo, "Evaluar el ahorro potencial en costos y distancias mediante la optimización de rutas de distribución." - Fuente de los datos: Menciona de dónde provienen los datos (simulados o reales).
 
-## Running Code
+# Materiales y Métodos
 
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+## Selección de datos
 
-```{r}
-1 + 1
-```
+El análisis se centra en evaluar las rutas de distribución actuales de la empresa con el objetivo de identificar posibles optimizaciones que reduzcan costos y distancias recorridas. Esto permitirá proponer mejoras que incrementen la eficiencia logística y reduzcan el impacto ambiental.
 
-You can add options to executable code like this
+**Fuente de los datos**:\
+Los datos utilizados provienen de registros históricos de entregas realizadas por la empresa, recopilados durante un período de 3 meses (Enero-Marzo 2024). En ausencia de algunas variables específicas, como tiempos de entrega, se utilizaron datos simulados para completar el análisis.
 
-```{r}
-#| echo: false
-2 * 2
-```
+**Información disponible**:\
+El dataset incluye las siguientes variables principales: - **ID del pedido**: Identificador único de cada entrega. - **Coordenadas de entrega**: Latitud y longitud del cliente, obtenidas a partir de la dirección. - **Peso del pedido**: Peso total del pedido en kilogramos. - **Distancia recorrida**: Distancia desde el almacén hasta la ubicación del cliente, en kilómetros. - **Costo asociado**: Costo de transporte (combustible, peajes, etc.). - **Vehículo asignado**: Identificador del vehículo que realizó la entrega.
 
-The `echo: false` option disables the printing of code (only output is displayed).
+Esta información es suficiente para analizar patrones actuales y plantear rutas optimizadas que minimicen distancias y costos.
+
+## Limpieza de datos
+
+-   Menciona brevemente los pasos realizados para preparar los datos: - Eliminación de duplicados. - Verificación de formatos (fechas, coordenadas). - Cálculo de valores faltantes (si aplica).
+
+# Resultados
+
+**Exploración:** - Presenta un análisis exploratorio con: - Medidas descriptivas (promedios, máximos, mínimos de distancia, costos, etc.). - Gráficos que reflejen patrones en las entregas (por ejemplo, un mapa de puntos para visualizar las entregas geográficas).
+
+**Optimización de rutas:** - Describe el enfoque para optimizar las rutas: - Agrupamiento de entregas por cercanía (ejemplo: k-means o un mapa interactivo). - Análisis de costos y distancias optimizadas frente a las reales.
+
+-   Muestra los resultados con gráficos (por ejemplo, comparando distancias o costos).
+
+# Conclusiones
+
+-   Resume los hallazgos principales (ahorros potenciales en tiempo/costos).
+-   Discute las limitaciones del análisis (por ejemplo, falta de tiempos de entrega reales).
+-   Menciona posibles pasos futuros (implementación en la empresa, integración con datos adicionales).
