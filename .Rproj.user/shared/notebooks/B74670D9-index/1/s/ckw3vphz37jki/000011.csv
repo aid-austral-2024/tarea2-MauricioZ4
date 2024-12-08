@@ -1,0 +1,28 @@
+"0",""
+"0","# Cargar librerías necesarias"
+"0","library(dplyr)"
+"2","Aviso:"
+"2"," package ‘dplyr’ was built under R version 4.4.2
+"
+"2","
+Adjuntando el paquete: ‘dplyr’
+
+"
+"2","The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+"
+"2","The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+"
+"0","# Calcular el centro de gravedad ponderado por volumen de ventas"
+"0","centro_gravedad <- Df %>%"
+"0","  summarise("
+"0","    Latitud_CG = sum(Latitud * Cantidad, na.rm = TRUE) / sum(Cantidad, na.rm = TRUE),"
+"0","    Longitud_CG = sum(Logitud * Cantidad, na.rm = TRUE) / sum(Cantidad, na.rm = TRUE)"
+"0","  )"
+"0",""
+"0","centro_gravedad"
