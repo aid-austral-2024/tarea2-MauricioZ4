@@ -12,7 +12,6 @@ format:
 editor: visual
 ---
 
-
 # Introducción
 
 La logística es un aspecto clave para cualquier empresa productiva, especialmente cuando se busca optimizar la distribución y reducir costos. En este trabajo, se propone evaluar la ubicación ideal para una nueva planta productiva. Esta decisión no solo busca minimizar los costos logísticos, sino también maximizar la eficiencia en la distribución hacia los clientes clave.
@@ -25,7 +24,7 @@ La logística es un aspecto clave para cualquier empresa productiva, especialmen
 -   Mejorar los tiempos de entrega.
 -   Incrementar la satisfacción del cliente.
 
-**Fuente de los Datos:** Los datos son simulados y representan ventas de un periodo anual con sus repectivos puntos de entregas georeferenciados. Se dispone de:
+**Fuente de los Datos:** Los datos son simulados y representan ventas de un periodo anual con sus respectivos puntos de entregas georreferenciados. Se dispone de:
 
 -   Coordenadas geográficas (latitud y longitud).
 -   Volumen de ventas (kilos).
@@ -39,14 +38,12 @@ El análisis se centra en un dataset histórico de ventas. Este dataset incluye 
 
 **Estructura del Dataset:**
 
-- **ID_Cliente:** Identificador único del cliente.
-- **Latitud y Longitud:** Coordenadas geográficas.
-- **Volumen:** Volumen de ventas.
-- **Tipo_Producto:** Clasificación del producto demandado.
+-   **ID_Cliente:** Identificador único del cliente.
+-   **Latitud y Longitud:** Coordenadas geográficas.
+-   **Volumen:** Volumen de ventas.
+-   **Tipo_Producto:** Clasificación del producto demandado.
 
-
-
-**Fuente de los Datos:** 
+**Fuente de los Datos:**
 
 Los datos provienen de registros históricos, representativos de un escenario real.
 
@@ -56,7 +53,7 @@ library(readxl)
 library(dplyr)
 
 # Importar el dataset
-Df <- read_excel("DataSet.xlsx")
+Df <- read_excel("datos_crudos/DataSet.xlsx")
 
 # Vista inicial del dataset
 head(Df)
@@ -87,13 +84,9 @@ valores_faltantes <- Df %>%
 valores_faltantes
 ```
 
+Se verificaron valores nulos en los campos de IdCliente, georreferencia y cantidad.
 
-
-Se verificaron valores nulos en los campos de IdCliente, georeferencia y cantidad. 
-
-Comenzamos por eliminar las lineas con IdCliente nulo (consideramos que no es representativo y puede afectar el analisis)
-
-
+Comenzamos por eliminar las líneas con IdCliente nulo (consideramos que no es representativo y puede afectar el análisis)
 
 ```{r}
 # Eliminar filas con IdCliente nulo
@@ -104,9 +97,7 @@ Df <- Df %>%
 summary(Df$IdCliente)
 ```
 
-Antes de continuar con el tratamiento de las variables de georeferencia, consideramos necesesario saber que porcentaje de ventas representan las lineas sin el dato de latitud y longitud:
-
-
+Antes de continuar con el tratamiento de las variables de georreferencia, consideramos necesario saber qué porcentaje de ventas representan las líneas sin el dato de latitud y longitud.
 
 ```{r}
 # Calcular el total de ventas
@@ -125,7 +116,7 @@ porcentaje_ventas_nulas <- (ventas_nulas / ventas_totales) * 100
 porcentaje_ventas_nulas
 ```
 
-   El porcentaje de ventas sin el dato de georeferencia representa el 37%. Consideramos que hacer el analisis sobre el un porcentaje mayor al 60% es representativo, por lo que procedemos a eliminar las lineas sin ese dato.
+El porcentaje de ventas sin el dato de georreferencia representa el 37%. Consideramos que hacer el análisis sobre el un porcentaje mayor al 60% es representativo, por lo que procedemos a eliminar las líneas sin ese dato.
 
 ```{r}
 # Eliminar filas con valores nulos o iguales a 0 en Latitud o Logitud
@@ -136,12 +127,11 @@ Df <- Df %>%
 summary(Df)
 ```
 
-
 2.  **Corrección de tipos de datos:**
 
     -   Para garantizar un análisis correcto, se revisaron los tipos de datos de las columnas clave:
 
--   **Latitud y Logitud:** Asegurar que sean de tipo numérico.
+-   **Latitud y Longitud:** Asegurar que sean de tipo numérico.
 -   **Cantidad:** Asegurar que sea de tipo numérico.
 
 ```{r}
@@ -162,7 +152,7 @@ summary(Df$Cantidad)
 
 ```
 
-En la revision de valores extremos podemos ver que hay datos mal cargados: En la variable Latitud hay valores de longitud y viceversa.
+En la revisión de valores extremos podemos ver que hay datos mal cargados: En la variable latitud hay valores de longitud y viceversa.
 
 ```{r}
 # Verificar las filas con valores de latitud o longitud incorrectos
@@ -244,7 +234,6 @@ resumen_general
 
 Se realizaron visualizaciones para analizar los patrones en los datos y explorar relaciones entre las variables clave.
 
-
 ### Mapas Geográficos de Clientes
 
 Se visualizan las ubicaciones geográficas de los clientes en un mapa interactivo, diferenciando por tipo de producto y volumen de ventas.
@@ -291,9 +280,7 @@ leaflet(Df_agrupado) %>%
 
 ```
 
-
 ### Mapas Geográficos de Clientes por tipo de producto
-
 
 ```{r}
 # Agrupar las cantidades por cliente, latitud, longitud y tipo de artículo
@@ -358,13 +345,13 @@ mapa_todos_tipos
 
 # Análisis de Optimización
 
-En esta sección se busca determinar la ubicación más óptima para construir una nueva planta productiva, utilizando un análisis basado en el volumen de ventas y la ubicación geográfica de los clientes.
+En esta sección se busca determinar la ubicación óptima para construir una nueva planta productiva, utilizando un análisis basado en el volumen de ventas y la ubicación geográfica de los clientes.
 
 El objetivo de este análisis es encontrar un punto que minimice los costos de transporte y, por ende, sea económicamente más eficiente para satisfacer la demanda. Para lograr esto, se utilizará el cálculo del **centro de gravedad**, el cual considera tanto las coordenadas geográficas de los clientes como los volúmenes de ventas asociados.
 
 ## Metodología del Análisis
 
-Para encontrar la ubicación más óptima, se implementó un **método del Centro de Gravedad**. Este método permite calcular una ubicación central ponderada, teniendo en cuenta las ventas de cada cliente. En otras palabras, cada cliente "tira" hacia la ubicación de la planta con una fuerza proporcional a su volumen de ventas.
+Para encontrar la ubicación óptima, se implementó un **método del Centro de Gravedad**. Este método permite calcular una ubicación central ponderada, teniendo en cuenta las ventas de cada cliente. En otras palabras, cada cliente "tira" hacia la ubicación de la planta con una fuerza proporcional a su volumen de ventas.
 
 Este método permite identificar una **ubicación central** que minimice el costo agregado de la distancia entre la planta y los clientes.
 
@@ -417,7 +404,7 @@ leaflet(Df) %>%
     lng = centro_gravedad$Longitud_CG,
     label = "Centro de Gravedad (Ubicación Óptima)",
     icon = icons(
-      iconUrl = "planta_icono.png",  # Aquí se usa el ícono personalizado
+      iconUrl = "extras/planta_icono.png",  # Aquí se usa el ícono personalizado
       iconWidth = 30,  # Ajusta el tamaño del ícono según tus preferencias
       iconHeight = 30
     ),
@@ -482,7 +469,7 @@ leaflet(Df_PRE) %>%
     lng = centro_gravedad_PRE$Longitud_CG,
     label = "Centro de Gravedad PRE (Ubicación Óptima)",
     icon = icons(
-      iconUrl = "planta_icono.png",  # Asegúrate de que este archivo esté disponible
+      iconUrl = "extras/planta_icono.png",  # Asegúrate de que este archivo esté disponible
       iconWidth = 30,
       iconHeight = 30
     ),
@@ -496,8 +483,6 @@ leaflet(Df_PRE) %>%
   )
 
 ```
-
-
 
 2.  **Producto CON**:
 
@@ -533,7 +518,7 @@ leaflet(Df_CON) %>%
     lng = centro_gravedad_CON$Longitud_CG,
     label = "Centro de Gravedad CON (Ubicación Óptima)",
     icon = icons(
-      iconUrl = "planta_icono.png",  # Asegúrate de que este archivo esté disponible
+      iconUrl = "extras/planta_icono.png",  # Asegúrate de que este archivo esté disponible
       iconWidth = 30,
       iconHeight = 30
     ),
@@ -547,8 +532,6 @@ leaflet(Df_CON) %>%
   )
 
 ```
-
-
 
 3.  **Producto SIL**:
 
@@ -584,7 +567,7 @@ leaflet(Df_SIL) %>%
     lng = centro_gravedad_SIL$Longitud_CG,
     label = "Centro de Gravedad SIL (Ubicación Óptima)",
     icon = icons(
-      iconUrl = "planta_icono.png",  # Asegúrate de que este archivo esté disponible
+      iconUrl = "extras/planta_icono.png",  # Asegúrate de que este archivo esté disponible
       iconWidth = 30,
       iconHeight = 30
     ),
@@ -604,11 +587,11 @@ leaflet(Df_SIL) %>%
 
 El análisis sugiere que la ubicación más adecuada para la construcción de la planta es un punto que se encuentra en las cercanías de Bell Ville, Córdoba. Este punto minimiza la distancia total a los clientes ponderada por las ventas.
 
-Resultados para los tipos de articulos mas importantes:
+Resultados para los tipos de artículos más importantes:
 
--  Productos PRE: Localidad mas cercana Chilibroste, Córdoba.
--  Productos CON: Localidad mas cercana Arias, Córdoba. 
--  Productos SIL: Localidad mas cercana Oliva, Córdoba.
+-   Productos PRE: Localidad más cercana Chilibroste, Córdoba.
+-   Productos CON: Localidad más cercana Arias, Córdoba.
+-   Productos SIL: Localidad más cercana Oliva, Córdoba.
 
 ## Limitaciones y Futuras Consideraciones
 
