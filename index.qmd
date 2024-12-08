@@ -5,8 +5,13 @@ date: "`r Sys.Date()`"
 format: 
   html:
     embed-resources: true
+    theme: darkly
+    toc: true          
+    toc-location: left 
+    toc-depth: 3       
 editor: visual
 ---
+
 
 # Introducción
 
@@ -34,12 +39,16 @@ El análisis se centra en un dataset histórico de ventas. Este dataset incluye 
 
 **Estructura del Dataset:**
 
--   **ID_Cliente:** Identificador único del cliente.
--   **Latitud y Longitud:** Coordenadas geográficas.
--   **Volumen:** Volumen de ventas.
--   **Tipo_Producto:** Clasificación del producto demandado.
+- **ID_Cliente:** Identificador único del cliente.
+- **Latitud y Longitud:** Coordenadas geográficas.
+- **Volumen:** Volumen de ventas.
+- **Tipo_Producto:** Clasificación del producto demandado.
 
-**Fuente de los Datos:** Los datos provienen de registros históricos, representativos de un escenario real.
+
+
+**Fuente de los Datos:** 
+
+Los datos provienen de registros históricos, representativos de un escenario real.
 
 ```{r}
 # Cargar librerías necesarias
@@ -78,7 +87,13 @@ valores_faltantes <- Df %>%
 valores_faltantes
 ```
 
--   Se verificaron valores nulos en todos los campos del data set. Comenzamos por eliminar las lineas con IdCliente nulo (consideramos que no es representativo y puede afectar el analisis)
+
+
+Se verificaron valores nulos en los campos de IdCliente, georeferencia y cantidad. 
+
+Comenzamos por eliminar las lineas con IdCliente nulo (consideramos que no es representativo y puede afectar el analisis)
+
+
 
 ```{r}
 # Eliminar filas con IdCliente nulo
@@ -89,7 +104,9 @@ Df <- Df %>%
 summary(Df$IdCliente)
 ```
 
--   Antes de continuar, consideramos necesesario saber que porcentaje de ventas representan las lineas sin el dato de latitud y longitud:
+Antes de continuar con el tratamiento de las variables de georeferencia, consideramos necesesario saber que porcentaje de ventas representan las lineas sin el dato de latitud y longitud:
+
+
 
 ```{r}
 # Calcular el total de ventas
@@ -108,7 +125,7 @@ porcentaje_ventas_nulas <- (ventas_nulas / ventas_totales) * 100
 porcentaje_ventas_nulas
 ```
 
-El porcentaje de ventas sin el dato de georeferencia representa el 37%. Consideramos que hacer el analisis sobre el un porcentaje mayor al 60% es representativo, por lo que procedemos a eliminar las lineas sin ese dato.
+   El porcentaje de ventas sin el dato de georeferencia representa el 37%. Consideramos que hacer el analisis sobre el un porcentaje mayor al 60% es representativo, por lo que procedemos a eliminar las lineas sin ese dato.
 
 ```{r}
 # Eliminar filas con valores nulos o iguales a 0 en Latitud o Logitud
@@ -119,7 +136,9 @@ Df <- Df %>%
 summary(Df)
 ```
 
-3.  **Corrección de tipos de datos:**
+
+2.  **Corrección de tipos de datos:**
+
     -   Para garantizar un análisis correcto, se revisaron los tipos de datos de las columnas clave:
 
 -   **Latitud y Logitud:** Asegurar que sean de tipo numérico.
@@ -130,7 +149,8 @@ summary(Df)
 str(Df)
 ```
 
-4.  **Verificación de valores extremos:**
+3.  **Verificación de valores extremos:**
+
     -   Se analizaron los volúmenes de ventas y las coordenadas para identificar valores atípicos que pudieran afectar el análisis.
 
 ```{r}
@@ -142,7 +162,7 @@ summary(Df$Cantidad)
 
 ```
 
-En la revision de valores extremos podemos ver que hay datos mal cargados: En la variable Latitud hay valores de longitud y viceversa
+En la revision de valores extremos podemos ver que hay datos mal cargados: En la variable Latitud hay valores de longitud y viceversa.
 
 ```{r}
 # Verificar las filas con valores de latitud o longitud incorrectos
@@ -224,9 +244,6 @@ resumen_general
 
 Se realizaron visualizaciones para analizar los patrones en los datos y explorar relaciones entre las variables clave.
 
-### Distribución de los Volúmenes de Ventas
-
-A continuación, se presenta un gráfico que muestra la distribución de los volúmenes de ventas. Este gráfico permite identificar concentraciones de clientes y volúmenes atípicos.
 
 ### Mapas Geográficos de Clientes
 
@@ -237,29 +254,32 @@ library(dplyr)
 library(leaflet)
 library(htmltools)
 
-# Agrupar datos por Latitud y Longitud y calcular el volumen total
-Df_cluster_volumen <- Df %>%
-  group_by(Latitud, Logitud) %>%
+
+# Agrupar datos por cliente, latitud y longitud, sumando los kilos
+Df_agrupado <- Df %>%
+  group_by(IdCliente, Latitud, Logitud) %>%
   summarise(
-    Volumen_Total = sum(Cantidad, na.rm = TRUE),
-    etiqueta = paste0(
-      "Ubicación:<br>",
-      "<b>Latitud:</b> ", Latitud, "<br>",
-      "<b>Longitud:</b> ", Logitud, "<br>",
-      "<b>Volumen Total:</b> ", format(Volumen_Total, big.mark = ".", decimal.mark = ",", scientific = FALSE), " kg"
-    ),
-    .groups = "drop" # Desagrupa después de consolidar
+    Cantidad_Total = sum(Cantidad, na.rm = TRUE), # Suma los kilos por cliente
+    .groups = "drop" # Desagrupa el resultado
   )
 
-# Crear el mapa por clúster de volúmenes
-leaflet(Df_cluster_volumen) %>%
+# Crear el mapa con datos agrupados
+leaflet(Df_agrupado) %>%
   addProviderTiles("OpenStreetMap.Mapnik") %>%
   addCircleMarkers(
     lat = ~Latitud,
     lng = ~Logitud,
-    radius = ~sqrt(Volumen_Total) / 5, # Ajusta el radio proporcional al volumen
+    radius = ~sqrt(Cantidad_Total) / 5, # Usa la cantidad total consolidada
     color = "blue",
-    label = ~lapply(etiqueta, HTML),
+    fillColor = "blue",
+    fillOpacity = 0.6,
+    label = ~lapply(
+      paste0(
+        "Cliente: ", IdCliente, "<br>",
+        "Volumen Total: ", Cantidad_Total, " kg"
+      ),
+      HTML
+    ),
     clusterOptions = markerClusterOptions()
   ) %>%
   addLegend(
@@ -271,28 +291,38 @@ leaflet(Df_cluster_volumen) %>%
 
 ```
 
+
+### Mapas Geográficos de Clientes por tipo de producto
+
+
 ```{r}
-library(leaflet)
-
-# Calcular el volumen total vendido por tipo de artículo
-Df_volumen <- Df %>%
-  group_by(TipoArticulo) %>%
-  summarise(Volumen_Total = sum(Cantidad, na.rm = TRUE)) %>%
-  arrange(desc(Volumen_Total)) %>%
-  mutate(Volumen_Format = format(Volumen_Total, big.mark = ".", scientific = FALSE))
-
-# Crear etiquetas informativas para los puntos
-Df <- Df %>%
+# Agrupar las cantidades por cliente, latitud, longitud y tipo de artículo
+Df_agrupado <- Df %>%
+  group_by(IdCliente, Latitud, Logitud, TipoArticulo) %>%
+  summarise(
+    Cantidad_Total = sum(Cantidad, na.rm = TRUE), # Sumar las cantidades
+    .groups = "drop"
+  ) %>%
   mutate(
     etiqueta = paste(
       "Cliente:", IdCliente,
       "<br>Tipo de Artículo:", TipoArticulo,
-      "<br>Volumen:", Cantidad
+      "<br>Volumen Total:", Cantidad_Total
     )
   )
 
+# Calcular el volumen total por tipo de artículo
+Df_volumen <- Df_agrupado %>%
+  group_by(TipoArticulo) %>%
+  summarise(
+    Volumen_Total = sum(Cantidad_Total, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  arrange(desc(Volumen_Total)) %>%
+  mutate(Volumen_Format = format(Volumen_Total, big.mark = ".", scientific = FALSE))
+
 # Crear el mapa interactivo
-mapa_todos_tipos <- leaflet(Df) %>%
+mapa_todos_tipos <- leaflet(Df_agrupado) %>%
   addProviderTiles("OpenStreetMap.Mapnik")
 
 # Añadir capas dinámicas para cada tipo de artículo con el formato requerido
@@ -302,10 +332,10 @@ for (i in 1:nrow(Df_volumen)) {
   
   mapa_todos_tipos <- mapa_todos_tipos %>%
     addCircleMarkers(
-      data = Df %>% filter(TipoArticulo == tipo),
+      data = Df_agrupado %>% filter(TipoArticulo == tipo),
       lat = ~Latitud,
       lng = ~Logitud,
-      radius = ~sqrt(Cantidad) / 5,
+      radius = ~sqrt(Cantidad_Total) / 5, # Usar la cantidad total consolidada
       color = "blue",  # Color uniforme
       label = ~lapply(etiqueta, HTML),
       clusterOptions = markerClusterOptions(),
@@ -340,7 +370,7 @@ Este método permite identificar una **ubicación central** que minimice el cost
 
 ## Resultados del Análisis de Optimización
 
-A continuación, se presenta el resultado del análisis, mostrando la ubicación óptima calculada para la nueva planta productiva. Esta ubicación se representa como el **Centro de Gravedad**, calculado utilizando los datos de ventas y ubicaciones de los clientes.
+A continuación, se presenta el resultado del análisis, mostrando la ubicación óptima calculada para la nueva planta productiva. Esta ubicación se representa como el **Centro de Gravedad**, calculado utilizando los datos de ventas y ubicaciones de entregas.
 
 El centro de gravedad se visualiza junto con las ubicaciones de los clientes en un mapa interactivo para comprender mejor la distribución y cómo el punto óptimo se posiciona en relación con los clientes.
 
@@ -467,6 +497,8 @@ leaflet(Df_PRE) %>%
 
 ```
 
+
+
 2.  **Producto CON**:
 
 ```{r}
@@ -515,6 +547,8 @@ leaflet(Df_CON) %>%
   )
 
 ```
+
+
 
 3.  **Producto SIL**:
 
@@ -572,7 +606,9 @@ El análisis sugiere que la ubicación más adecuada para la construcción de la
 
 Resultados para los tipos de articulos mas importantes:
 
--Productos PRE: Localidad mas cercana Chilibroste, Córdoba. -Productos CON: Localidad mas cercana Arias, Córdoba. -Productos SIL: Localidad mas cercana Oliva, Córdoba.
+-  Productos PRE: Localidad mas cercana Chilibroste, Córdoba.
+-  Productos CON: Localidad mas cercana Arias, Córdoba. 
+-  Productos SIL: Localidad mas cercana Oliva, Córdoba.
 
 ## Limitaciones y Futuras Consideraciones
 
